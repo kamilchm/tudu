@@ -1,9 +1,9 @@
 {
   "name": "reason-to-do",
   "scripts": {
-    "start": "bsb -make-world -w",
+    "start": "nf start",
     "js": "bsb -make-world",
-    "build": "webpack -w",
+    "build": "webpack",
     "clean": "bsb -clean-world"
   },
   "dependencies": {
@@ -13,6 +13,8 @@
   },
   "devDependencies": {
     "bs-platform": "^2.0.0",
-    "webpack": "^3.0.0"
+    "foreman": "^2.0.0",
+    "webpack": "^3.0.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }
