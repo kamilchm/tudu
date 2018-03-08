@@ -1,7 +1,9 @@
 {
-  "name" : "reason-to-do",
-  "reason" : {"react-jsx" : 2},
-  "refmt": 3,
-  "bs-dependencies": ["reason-react"],
-  "sources": "src"
+  "name" : "tudu",
+  "bs-dependencies": ["bucklescript-tea"],
+  "sources": "src",
+  "bsc-flags": [
+    "-bs-super-errors",
+    "-w -23"
+  ]
 }

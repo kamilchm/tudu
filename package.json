@@ -1,18 +1,14 @@
 {
-  "name": "reason-to-do",
+  "name": "tudu",
   "scripts": {
     "start": "nf start",
     "js": "bsb -make-world",
     "build": "webpack",
     "clean": "bsb -clean-world"
   },
-  "dependencies": {
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "reason-react": "0.2.4"
-  },
   "devDependencies": {
     "bs-platform": "^2.0.0",
+    "bucklescript-tea": "^0.7.1",
     "foreman": "^2.0.0",
     "webpack": "^3.0.0",
     "webpack-dev-server": "^2.11.1"
