@@ -1,7 +1,7 @@
 open Tea
 open Pomodoro
 
-type state = { pomodoros: pomodoro list }
+type state = { pomodoros: any_pomodoro list }
 
 type model =
   | Waiting of state
