@@ -1,0 +1,14 @@
+@tailwind preflight;
+@tailwind utilities;
+
+.app {
+    @apply .bg-blue-darker .h-screen .flex .justify-center .items-center .text-white
+}
+
+.timer {
+    @apply .w-1/3 .bg-blue-darkest .rounded-lg .shadow .p-6
+}
+
+button {
+    @apply .text-white .p-2 .rounded .bg-blue-darker .border-blue-dark .border-2 .border-solid
+}

@@ -14,6 +14,8 @@ type actions =
 
 let component = ReasonReact.reducerComponent("Pomodoros");
 
+let textEl = ReasonReact.stringToElement;
+
 let make = (_children) => {
   ...component,
   initialState: () => Waiting([]),
@@ -34,15 +36,17 @@ let make = (_children) => {
       | Waiting(_) => ("Let's RUN!!!", TimerStart)
       | Running(_) => ("Stop it!", TimerStop)
       };
-    <div>
-      <p>
-        (ReasonReact.stringToElement(msg))
-      </p>
-      <p>
-        <button onClick=(_event => self.send(action))>
-          (ReasonReact.stringToElement(cmd))
-        </button>
-      </p>
+    <div className="app container">
+      <div className="timer">
+        <div>
+          (textEl(msg))
+        </div>
+        <div>
+          <button onClick=(_event => self.send(action))>
+            (textEl(cmd))
+          </button>
+        </div>
+      </div>
     </div>
   }
 };
