@@ -1,7 +1,11 @@
 {
   "name" : "tudu",
-  "bs-dependencies": ["bucklescript-tea"],
   "sources": "src",
+  "refmt": 3,
+  "bs-dependencies": ["reason-react"],
+  "reason": {
+    "react-jsx": 2
+  },
   "bsc-flags": [
     "-bs-super-errors",
     "-w -23"

@@ -8,9 +8,11 @@
   },
   "devDependencies": {
     "bs-platform": "^2.0.0",
-    "bucklescript-tea": "^0.7.1",
     "foreman": "^2.0.0",
     "webpack": "^3.0.0",
     "webpack-dev-server": "^2.11.1"
+  },
+  "dependencies": {
+    "reason-react": "^0.3.4"
   }
 }
