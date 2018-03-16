@@ -7,9 +7,8 @@ type state =
 
 type actions =
   | TimerStart
-  | TimerStartAt(float)
-  | TimerTick
-  | TimerStop
+  | TimerEnd
+  | TimerCancel
   ;
 
 let component = ReasonReact.reducerComponent("Pomodoros");
@@ -22,7 +21,7 @@ let make = (_children) => {
   reducer: (action, state) =>
     switch (state, action) {
     | (Waiting(state), TimerStart) => ReasonReact.Update(Running(state))
-    | (Running(state), TimerStop) => ReasonReact.Update(Waiting(state))
+    | (Running(state), TimerEnd) => ReasonReact.Update(Waiting(state))
     | _ => ReasonReact.NoUpdate
     },
   render: (self) => {
@@ -31,22 +30,14 @@ let make = (_children) => {
       | Waiting(_) => "Timer is WAITING..."
       | Running(_) => "Timer is RUNNING!!!"
       };
-    let (cmd, action) =
-      switch (self.state) {
-      | Waiting(_) => ("Let's RUN!!!", TimerStart)
-      | Running(_) => ("Stop it!", TimerStop)
-      };
-    <div className="app container">
-      <div className="timer">
-        <div>
+    <div className="container bg-blue-darker h-screen text-white
+                    flex flex-col justify-center items-center">
+        <Timer seconds=10
+               onStart=(_ev => self.send(TimerStart))
+               onEnd=(_ev => self.send(TimerEnd))/>
+        <div className="m-4">
           (textEl(msg))
         </div>
-        <div>
-          <button onClick=(_event => self.send(action))>
-            (textEl(cmd))
-          </button>
-        </div>
-      </div>
     </div>
   }
 };
