@@ -10,11 +10,19 @@ type running = {
 
 let timeLeft = (stopAt) => ((stopAt |> Js.Date.valueOf) -. Js.Date.now());
 
+let twoDigitString = (number) => {
+  let str = string_of_int(number);
+  switch (String.length(str)) {
+  | 1 => "0" ++ str
+  | _ => str
+  };
+};
+
 let display = ({stopAt}) => {
   let toGoMillis = timeLeft(stopAt) |> int_of_float;
-  let seconds = toGoMillis / 1000;
+  let seconds = (toGoMillis / 1000) mod 60;
   let minutes = toGoMillis / 60 / 1000;
-  string_of_int(minutes) ++ ":" ++ string_of_int(seconds);
+  twoDigitString(minutes) ++ ":" ++ twoDigitString(seconds);
 };
 
 type state =
@@ -65,7 +73,7 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
                      |> Js.Date.fromFloat;
         let timerId = (Js.Global.setInterval(() => {
           self.send(Tick);
-        }, 1000));
+        }, 200));
         self.send(Started({stopAt, timerId, beepRef: ref(None)})); 
       })
       | (Running({stopAt, timerId, beepRef}), End) =>
@@ -98,7 +106,7 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
         | Waiting => ("--:--", "Let's RUN!!!", "blue-darkest", start)
         | Running(timer) => (display(timer), "Stop it!", "pink", cancel)
         };
-      <div className="w-1/2 sm:w-1/3 bg-blue-darkest rounded-lg shadow p-6
+      <div className="w-3/5 sm:w-1/3 bg-blue-darkest rounded-lg shadow p-6
                       flex flex-col items-center items-stretch">
         <h1 className="self-center mb-4 text-5xl">
           (textEl(display))
@@ -109,7 +117,7 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
           (textEl(cmd))
         </button>
 
-        <audio ref=(self.handle(setBeepRef)) src="../audio/beep.mp3"
+        <audio ref=(self.handle(setBeepRef)) src="/audio/beep.mp3"
                autoPlay=Js.Boolean.to_js_boolean(false) />
       </div>
     }
