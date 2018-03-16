@@ -1,6 +1,11 @@
+type audio = Dom.element;
+
+[@bs.send] external play : audio => unit = "";
+
 type running = {
   stopAt: Js.Date.t,
   timerId: Js.Global.intervalId,
+  beepRef: ref(option(audio)),
 };
 
 let timeLeft = (stopAt) => ((stopAt |> Js.Date.valueOf) -. Js.Date.now());
@@ -44,6 +49,12 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
     };
     self.ReasonReact.send(Cancel);
   };
+  let setBeepRef = (theRef, {ReasonReact.state}) => {
+    switch (state) {
+    | Running(timer) => timer.beepRef := Js.Nullable.toOption(theRef)
+    | _ => ()
+    };
+  };
   {
     ...component,
     initialState: () => Waiting,
@@ -55,14 +66,15 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
         let timerId = (Js.Global.setInterval(() => {
           self.send(Tick);
         }, 1000));
-        self.send(Started({stopAt, timerId})); 
+        self.send(Started({stopAt, timerId, beepRef: ref(None)})); 
       })
-      | (Running({stopAt, timerId}), End) =>
+      | (Running({stopAt, timerId, beepRef}), End) =>
         ReasonReact.UpdateWithSideEffects(Waiting, self => {
           Js.Global.clearInterval(timerId);
-          [%bs.raw {|
-            document.getElementById("beep").play()
-          |}];
+          switch (beepRef^) {
+          | Some(beep) => beep |> play
+          | None => Js.log("No beep sound to play")
+          };
         })
       | (Waiting, Started(timer)) => ReasonReact.Update(Running(timer))
       | (Running(timer), Tick) => {
@@ -97,7 +109,8 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
           (textEl(cmd))
         </button>
 
-        <audio id="beep" src="../audio/beep.mp3" autoPlay=Js.Boolean.to_js_boolean(false) ></audio>
+        <audio ref=(self.handle(setBeepRef)) src="../audio/beep.mp3"
+               autoPlay=Js.Boolean.to_js_boolean(false) />
       </div>
     }
   }
