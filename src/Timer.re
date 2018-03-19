@@ -101,18 +101,18 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
       | _ => ReasonReact.NoUpdate
       },
     render: (self) => {
-      let (display, cmd, buttonCollor, handler) =
+      let (display, cmd, digitsColor, btnColor, handler) =
         switch (self.state) {
-        | Waiting => ("--:--", "Let's RUN!!!", "blue-darkest", start)
-        | Running(timer) => (display(timer), "Stop it!", "pink", cancel)
+        | Waiting => ("88:88", "Let's RUN!!!", "grey-darker", "blue-darkest", start)
+        | Running(timer) => (display(timer), "Stop it!", "white", "pink", cancel)
         };
       <div className="w-3/5 sm:w-1/3 bg-blue-darkest rounded-lg shadow p-6
                       flex flex-col items-center items-stretch">
-        <h1 className="self-center mb-4 text-5xl">
+        <h1 className=("self-center mb-4 text-5xl font-mono text-" ++ digitsColor)>
           (textEl(display))
         </h1>
         <button onClick=(self.handle(handler))
-         className=("text-white p-2 rounded bg-" ++ buttonCollor ++
+         className=("text-white p-2 rounded bg-" ++ btnColor ++
                     " border-blue-dark border-2 border-solid self-stretch")>
           (textEl(cmd))
         </button>
