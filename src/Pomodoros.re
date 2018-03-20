@@ -18,8 +18,11 @@ type actions =
   | Submit
   ;
 
-let component = ReasonReact.reducerComponent("Pomodoros");
+type config = {
+  pomoTime: int,
+};
 
+let component = ReasonReact.reducerComponent("Pomodoros");
  
 let setDescriptionFieldRef = (r, {ReasonReact.state}) =>
   switch (state) {
@@ -47,9 +50,9 @@ let update = (action, state) =>
 
 let textEl = ReasonReact.stringToElement;
 
-let view = ({ReasonReact.state, handle, send}) => {
+let view = (config, {ReasonReact.state, handle, send}) => {
   let timer =
-    <Timer seconds=5
+    <Timer seconds=(config.pomoTime)
            onStart=(_ev => send(TimerStart))
            onEnd=(_ev => send(TimerEnd))/>;
   let msg = (text) =>
@@ -92,5 +95,5 @@ let make = (_children) => {
   ...component,
   initialState: () => Waiting([]),
   reducer: update,
-  render: view
+  render: view({pomoTime: 25 * 60})
 };
