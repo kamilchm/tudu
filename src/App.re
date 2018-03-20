@@ -22,7 +22,7 @@ type config = {
   pomoTime: int,
 };
 
-let component = ReasonReact.reducerComponent("Pomodoros");
+let component = ReasonReact.reducerComponent("App");
  
 let setDescriptionFieldRef = (r, {ReasonReact.state}) =>
   switch (state) {

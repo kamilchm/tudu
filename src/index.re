@@ -1,1 +1,1 @@
-ReactDOMRe.renderToElementWithId(<Pomodoros />, "root");
+ReactDOMRe.renderToElementWithId(<App />, "root");
