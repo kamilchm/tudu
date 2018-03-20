@@ -1,2 +1,10 @@
 @tailwind preflight;
 @tailwind utilities;
+
+input {
+    outline: none;
+}
+
+button {
+    outline: none;
+}

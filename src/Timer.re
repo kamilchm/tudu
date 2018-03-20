@@ -83,19 +83,17 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
           | Some(beep) => beep |> play
           | None => Js.log("No beep sound to play")
           };
+          switch (onEnd) {
+          | Some(handler) => handler()
+          | None => ()
+          };
         })
       | (Waiting, Started(timer)) => ReasonReact.Update(Running(timer))
       | (Running(timer), Tick) => {
         if (timeLeft(timer.stopAt) > 0.) {
           ReasonReact.Update(Running(timer))
         } else {
-          ReasonReact.SideEffects(self => {
-            self.send(End);
-            switch (onEnd) {
-            | Some(handler) => handler()
-            | None => ()
-            };
-          });
+          ReasonReact.SideEffects(self => self.send(End))
         }
       }
       | _ => ReasonReact.NoUpdate
