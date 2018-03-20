@@ -1,11 +1,6 @@
-type audio = Dom.element;
-
-[@bs.send] external play : audio => unit = "";
-
 type running = {
   stopAt: Js.Date.t,
   timerId: Js.Global.intervalId,
-  beepRef: ref(option(audio)),
 };
 
 let timeLeft = (stopAt) => ((stopAt |> Js.Date.valueOf) -. Js.Date.now());
@@ -57,12 +52,6 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
     };
     self.ReasonReact.send(Cancel);
   };
-  let setBeepRef = (theRef, {ReasonReact.state}) => {
-    switch (state) {
-    | Running(timer) => timer.beepRef := Js.Nullable.toOption(theRef)
-    | _ => ()
-    };
-  };
   {
     ...component,
     initialState: () => Waiting,
@@ -74,28 +63,23 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
         let timerId = (Js.Global.setInterval(() => {
           self.send(Tick);
         }, 200));
-        self.send(Started({stopAt, timerId, beepRef: ref(None)})); 
+        self.send(Started({stopAt, timerId})); 
       })
-      | (Running({stopAt, timerId, beepRef}), End) =>
+      | (Running({stopAt, timerId}), End) =>
         ReasonReact.UpdateWithSideEffects(Waiting, self => {
           Js.Global.clearInterval(timerId);
-          switch (beepRef^) {
-          | Some(beep) => beep |> play
-          | None => Js.log("No beep sound to play")
-          };
           switch (onEnd) {
           | Some(handler) => handler()
           | None => ()
           };
         })
       | (Waiting, Started(timer)) => ReasonReact.Update(Running(timer))
-      | (Running(timer), Tick) => {
+      | (Running(timer), Tick) =>
         if (timeLeft(timer.stopAt) > 0.) {
           ReasonReact.Update(Running(timer))
         } else {
           ReasonReact.SideEffects(self => self.send(End))
         }
-      }
       | _ => ReasonReact.NoUpdate
       },
     render: (self) => {
@@ -114,9 +98,6 @@ let make = (~seconds, ~onStart=?, ~onEnd=?, ~onCancel=?, _children) => {
                     " border-blue-dark border-2 border-solid self-stretch")>
           (textEl(cmd))
         </button>
-
-        <audio ref=(self.handle(setBeepRef)) src="/audio/beep.mp3"
-               autoPlay=Js.Boolean.to_js_boolean(false) />
       </div>
     }
   }

@@ -5,9 +5,20 @@ type submitting = {
   descriptionField: ref(option(Dom.element)),
 };
 
+type audio = Dom.element;
+
+[@bs.send] external play : audio => unit = "";
+
+/* https://github.com/excitement-engineer/Red/blob/c34c88b2bf6556bb31df54eb23b13c863cc6460d/src/notification.re */
+
+type working = {
+  pomodoro: Pomodoro.pomodoro([`Started]),
+  beepRef: ref(option(audio)),
+};
+
 type state =
   | Waiting(pomodoros)
-  | Running(Pomodoro.pomodoro([`Started]), pomodoros)
+  | Running(working, pomodoros)
   | Submitting(submitting, pomodoros)
   ;
 
@@ -24,18 +35,29 @@ type config = {
 
 let component = ReasonReact.reducerComponent("App");
  
-let setDescriptionFieldRef = (r, {ReasonReact.state}) =>
+let setDescriptionFieldRef = (theRef, {ReasonReact.state}) =>
   switch (state) {
-  | Submitting(s, _) => s.descriptionField := Js.Nullable.toOption(r)
+  | Submitting(s, _) => s.descriptionField := Js.Nullable.toOption(theRef)
+  | _ => ()
+  };
+
+let setBeepRef = (theRef, {ReasonReact.state}) =>
+  switch (state) {
+  | Running(s, _) => s.beepRef := Js.Nullable.toOption(theRef)
   | _ => ()
   };
 
 let update = (action, state) =>
   switch (state, action) {
-  | (Waiting(state), TimerStart) =>
-    ReasonReact.Update(Running(Pomodoro.start(Js.Date.now()), state))
-  | (Running(pomodoro, state), TimerEnd) => ReasonReact.Update(Submitting(
-        {pomodoro, descriptionField: ref(None)}, state))
+  | (Waiting(state), TimerStart) => ReasonReact.Update(
+    Running({pomodoro: Pomodoro.start(Js.Date.now()), beepRef: ref(None)}, state))
+  | (Running({pomodoro, beepRef}, state), TimerEnd) => ReasonReact.UpdateWithSideEffects(
+      Submitting({pomodoro, descriptionField: ref(None)}, state),
+      self => switch (beepRef^) {
+      | Some(beep) => beep |> play
+      | None => Js.log("No beep sound to play")
+      }
+  )
   | (Submitting(s, pomodoros), Submit) =>
     switch (s.descriptionField^) {
     | Some(df) => { 
@@ -61,6 +83,10 @@ let view = (config, {ReasonReact.state, handle, send}) => {
     </div>;
   let containerClasses = "container bg-blue-darker h-screen text-white
                           flex flex-col justify-center items-center";
+  let beepAudio =
+    <audio ref=(handle(setBeepRef)) src="/audio/beep.mp3"
+           autoPlay=Js.Boolean.to_js_boolean(true) />;
+
   switch(state) {
   | Waiting(_) =>
     <div className=(containerClasses)>
@@ -87,6 +113,7 @@ let view = (config, {ReasonReact.state, handle, send}) => {
           (textEl("Submit"))
         </button>
       </div>
+      beepAudio
     </div>
   }
 };
