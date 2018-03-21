@@ -7,7 +7,7 @@
     "clean": "bsb -clean-world"
   },
   "devDependencies": {
-    "bs-platform": "^2.0.0",
+    "bs-platform": "^2.2.3",
     "css-loader": "^0.28.10",
     "extract-text-webpack-plugin": "^3.0.2",
     "foreman": "^2.0.0",

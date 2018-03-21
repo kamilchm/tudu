@@ -1,3 +1,5 @@
+open Belt;
+
 type pomodoros = list(Pomodoro.pomodoro([`Completed]));
 
 type submitting = {
@@ -5,20 +7,11 @@ type submitting = {
   descriptionField: ref(option(Dom.element)),
 };
 
-type audio = Dom.element;
-
-[@bs.send] external play : audio => unit = "";
-
 /* https://github.com/excitement-engineer/Red/blob/c34c88b2bf6556bb31df54eb23b13c863cc6460d/src/notification.re */
-
-type working = {
-  pomodoro: Pomodoro.pomodoro([`Started]),
-  beepRef: ref(option(audio)),
-};
 
 type state =
   | Waiting(pomodoros)
-  | Running(working, pomodoros)
+  | Running(Pomodoro.pomodoro([`Started]), pomodoros)
   | Submitting(submitting, pomodoros)
   ;
 
@@ -41,23 +34,12 @@ let setDescriptionFieldRef = (theRef, {ReasonReact.state}) =>
   | _ => ()
   };
 
-let setBeepRef = (theRef, {ReasonReact.state}) =>
-  switch (state) {
-  | Running(s, _) => s.beepRef := Js.Nullable.toOption(theRef)
-  | _ => ()
-  };
-
 let update = (action, state) =>
   switch (state, action) {
   | (Waiting(state), TimerStart) => ReasonReact.Update(
-    Running({pomodoro: Pomodoro.start(Js.Date.now()), beepRef: ref(None)}, state))
-  | (Running({pomodoro, beepRef}, state), TimerEnd) => ReasonReact.UpdateWithSideEffects(
-      Submitting({pomodoro, descriptionField: ref(None)}, state),
-      self => switch (beepRef^) {
-      | Some(beep) => beep |> play
-      | None => Js.log("No beep sound to play")
-      }
-  )
+    Running(Pomodoro.start(Js.Date.now()), state))
+  | (Running(pomodoro, state), TimerEnd) => ReasonReact.Update(
+      Submitting({pomodoro, descriptionField: ref(None)}, state))
   | (Submitting(s, pomodoros), Submit) =>
     switch (s.descriptionField^) {
     | Some(df) => { 
@@ -84,14 +66,27 @@ let view = (config, {ReasonReact.state, handle, send}) => {
   let containerClasses = "container bg-blue-darker h-screen text-white
                           flex flex-col justify-center items-center";
   let beepAudio =
-    <audio ref=(handle(setBeepRef)) src="/audio/beep.mp3"
-           autoPlay=Js.Boolean.to_js_boolean(true) />;
+    <audio src="/audio/beep.mp3" autoPlay=Js.Boolean.to_js_boolean(true) />;
+  
+  let pomodoItem = (key, details) =>
+    <div key=(key)>(textEl(details))</div>;
 
   switch(state) {
-  | Waiting(_) =>
+  | Waiting(pomos) =>
     <div className=(containerClasses)>
       timer
       (msg("Timer is WAITING..."))
+      (pomos
+      |> List.mapWithIndex(_, (i, t) => {
+        let key = string_of_int(i);
+        switch (t) {
+        | Pomodoro.Completed({details}) => details |> pomodoItem(key)
+        | _ => "Unknown pomodoro type" |> pomodoItem(key)
+        };
+      })
+      |> List.toArray
+      |> ReasonReact.arrayToElement
+      )
     </div>
   | Running(_) =>
     <div className=(containerClasses)>
@@ -122,5 +117,5 @@ let make = (_children) => {
   ...component,
   initialState: () => Waiting([]),
   reducer: update,
-  render: view({pomoTime: 25 * 60})
+  render: view({pomoTime: 5})
 };
