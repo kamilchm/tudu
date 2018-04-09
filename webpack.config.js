@@ -17,6 +17,10 @@ module.exports = {
             'postcss-loader'
           ]
         })
+      },
+      {
+        test: /\.mp3$/,
+        loader: 'file-loader'
       }
     ]
   },

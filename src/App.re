@@ -7,8 +7,6 @@ type submitting = {
   descriptionField: ref(option(Dom.element)),
 };
 
-/* https://github.com/excitement-engineer/Red/blob/c34c88b2bf6556bb31df54eb23b13c863cc6460d/src/notification.re */
-
 type state =
   | Waiting(pomodoros)
   | Running(Pomodoro.pomodoro([`Started]), pomodoros)
@@ -38,8 +36,10 @@ let update = (action, state) =>
   switch (state, action) {
   | (Waiting(state), TimerStart) => ReasonReact.Update(
     Running(Pomodoro.start(Js.Date.now()), state))
-  | (Running(pomodoro, state), TimerEnd) => ReasonReact.Update(
-      Submitting({pomodoro, descriptionField: ref(None)}, state))
+  | (Running(pomodoro, state), TimerEnd) => ReasonReact.UpdateWithSideEffects(
+      Submitting({pomodoro, descriptionField: ref(None)}, state),
+      (_) => Alarm.fire(~message="Time for a break!", ~title="Time's up")
+    )
   | (Submitting(s, pomodoros), Submit) =>
     switch (s.descriptionField^) {
     | Some(df) => { 
@@ -65,8 +65,6 @@ let view = (config, {ReasonReact.state, handle, send}) => {
     </div>;
   let containerClasses = "container bg-blue-darker h-screen text-white
                           flex flex-col justify-center items-center";
-  let beepAudio =
-    <audio src="/audio/beep.mp3" autoPlay=Js.Boolean.to_js_boolean(true) />;
   
   let pomodoItem = (key, details) =>
     <div key=(key)>(textEl(details))</div>;
@@ -108,7 +106,6 @@ let view = (config, {ReasonReact.state, handle, send}) => {
           (textEl("Submit"))
         </button>
       </div>
-      beepAudio
     </div>
   }
 };
@@ -116,6 +113,10 @@ let view = (config, {ReasonReact.state, handle, send}) => {
 let make = (_children) => {
   ...component,
   initialState: () => Waiting([]),
+  didMount: (_) => {
+    Alarm.register();
+    ReasonReact.NoUpdate
+  },
   reducer: update,
   render: view({pomoTime: 5})
 };
